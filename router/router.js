@@ -14,21 +14,27 @@ var pool = mysql.createPool({
 //=======================
 let n=''
 let d=''
+let u=''
 //设置存储路径及其他选项（根据自己的需求进行调整）
 const storage = multer.diskStorage({
 	destination: function(req, file, cb) {
 		// 指定保存到本地的目录
-		cb(null, './upload')
+		
+		cb(null, './static/upload')
 	},
 	filename: function(req, file, cb) {
 		// 生成新的文件名
 		let imageN = JSON.parse(req.body.dat).imageName.split('.')[1] //把接收到的数据先转为对象再取值
 		n = JSON.parse(req.body.dat).modifyName
 		d= JSON.parse(req.body.dat).modifyDetail
-		const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9) + '.' + imageN;
-		cb(null, file.fieldname + '-' + uniqueSuffix);
-		console.log('file...', file)
-		console.log(n, d)
+		//const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9) + '.' + imageN;
+		const uniqueSuffix = n+'.'+imageN
+		//cb(null, file.fieldname + '-' + uniqueSuffix);
+		cb(null,uniqueSuffix);
+		u="./upload/"+ file.fieldname+"-" + uniqueSuffix
+		
+	
+	
 		
 	}
 });
@@ -54,28 +60,32 @@ router.post('/upload', (req, res) => {
 				error: err.code
 			});
 		}
-
+		
 		// 文件上传成功，返回相关信息或重定向等操作
 		console.log("文件上传成功");
 		res.sendStatus(204);
+	
+	console.log("image path:",req.file.path)
 	});
+
 });
 //处理修改请求
 router.post("/modify",(req,res) => {
 console.log("222222222",n,d)
-	let sql="update myfamily set detail= ? where name=? "
-	let params = [d,n]
+	let sql="update myfamily set detail= ? ,url=? where name= ? "
+	let params = [d,u,n]
 	pool.getConnection(function(err, connection) {
 		//if(err) throw err;
 		connection.query(sql, params, function(error, results, fields) {
-	       res.send(results);
+	     //  res.send(results);
 
-
+// res.send("http://localhost:3000/img/image-1709254148203-748163076.jpg")
 
 			connection.release();
 			if (error) throw error;
 		});
-	});
+	});	
+	
 })
 
 //=======================
