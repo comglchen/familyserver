@@ -31,7 +31,7 @@ const storage = multer.diskStorage({
 		const uniqueSuffix = n+'.'+imageN
 		//cb(null, file.fieldname + '-' + uniqueSuffix);
 		cb(null,uniqueSuffix);
-		u="./upload/"+ file.fieldname+"-" + uniqueSuffix
+	
 		
 	
 	
@@ -72,8 +72,8 @@ router.post('/upload', (req, res) => {
 //处理修改请求
 router.post("/modify",(req,res) => {
 console.log("222222222",n,d)
-	let sql="update myfamily set detail= ? ,url=? where name= ? "
-	let params = [d,u,n]
+	let sql="update myfamily set detail= ? where name= ? "
+	let params = [d,n]
 	pool.getConnection(function(err, connection) {
 		//if(err) throw err;
 		connection.query(sql, params, function(error, results, fields) {
