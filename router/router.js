@@ -5,12 +5,19 @@ const router = express.Router();
 
 var pool = mysql.createPool({
 	connectionLimit: 10,
-	//host:'120.26.48.204',
-	host: 'localhost',
+	host:'120.26.48.204',
 	user: 'root',
-	password: '123789',
+	password: 'Mysql_00667192',
 	database: 'families'
 });
+// var pool = mysql.createPool({
+// 	connectionLimit: 10,
+
+// 	host: 'localhost',
+// 	user: 'root',
+// 	password: '123789',
+// 	database: 'families'
+// });
 //=======================
 let n=''
 let d=''
@@ -44,7 +51,30 @@ const upload = multer({
 	storage: storage
 }).single('image');
 
-
+//登录处理
+router.post('/login',(req,res)=>{
+	let sql="select * from myfamily where username= ? and password= ? "
+		let params = []
+		
+		if(req.body.username){
+			params.push(req.body.username)
+		}
+		if(req.body.password){
+			params.push(req.body.password)
+		}
+		pool.getConnection(function(err, connection) {
+			//if(err) throw err;
+			connection.query(sql, params, function(error, results, fields) {
+		    
+				res.send(results)
+	
+	
+				connection.release();
+				if (error) throw error;
+			});
+		});	
+		console.log('router.post-->',req.body.username,req.body.password)
+})
 
 
 // 处理文件上传
@@ -109,7 +139,7 @@ router.get("/getData", (req, res) => {
 		//if(err) throw err;
 		connection.query(sql, params, function(error, results, fields) {
 			res.send(results);
-			console.log('result:', results);
+			//console.log('result:', results);
 
 			/* res.render('suspect',{
 				res:results,

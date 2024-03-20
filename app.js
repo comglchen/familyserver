@@ -4,6 +4,8 @@ const bodyParser = require('body-parser')
 const multer=require('multer')
 const cors=require('cors')
 let app = express()
+app.use(cors())
+app.use(express.json())
 //=============================
 
 
@@ -17,7 +19,7 @@ let app = express()
 const port = '3000'
 
 
-app.use(cors())
+
 app.use(router);
 app.use('/upload', express.static(__dirname));
 app.use(bodyParser.urlencoded({ extended: false })); // 解析表单提交的数据
