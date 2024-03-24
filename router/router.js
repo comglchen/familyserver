@@ -2,7 +2,7 @@ const express = require('express');
 const mysql = require('mysql');
 const multer = require('multer')
 const router = express.Router();
-
+const jwt = require('jsonwebtoken')
 var pool = mysql.createPool({
 	connectionLimit: 10,
 	host:'120.26.48.204',
@@ -19,9 +19,9 @@ var pool = mysql.createPool({
 // 	database: 'families'
 // });
 //=======================
-let n=''
-let d=''
-let u=''
+
+
+
 //设置存储路径及其他选项（根据自己的需求进行调整）
 const storage = multer.diskStorage({
 	destination: function(req, file, cb) {
@@ -55,7 +55,14 @@ const upload = multer({
 router.post('/login',(req,res)=>{
 	let sql="select * from myfamily where username= ? and password= ? "
 		let params = []
-		
+	const secretKey = 'baby-i-love-u'
+	const payload ={password:req.body.password}	
+	const token=jwt.sign(payload,secretKey,{expiresIn:'1h'})	    
+	res.setHeader('Access-Control-Expose-Headers','token')	
+		   
+		    
+		   
+			
 		if(req.body.username){
 			params.push(req.body.username)
 		}
@@ -65,9 +72,13 @@ router.post('/login',(req,res)=>{
 		pool.getConnection(function(err, connection) {
 			//if(err) throw err;
 			connection.query(sql, params, function(error, results, fields) {
-		    
+				
+			if(results.length) 
+				res.setHeader('token',token);
 				res.send(results)
-	
+		  	console.log("results====>>>>",results.length)
+				
+			
 	
 				connection.release();
 				if (error) throw error;
@@ -103,7 +114,7 @@ router.post('/upload', (req, res) => {
 router.post("/modify",(req,res) => {
 console.log("222222222",n,d)
 	let sql="update myfamily set detail= ? where name= ? "
-	let params = [d,n]
+	let params = []
 	pool.getConnection(function(err, connection) {
 		//if(err) throw err;
 		connection.query(sql, params, function(error, results, fields) {
