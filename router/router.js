@@ -23,6 +23,9 @@ var pool = mysql.createPool({
 
 
 //设置存储路径及其他选项（根据自己的需求进行调整）
+let imageN=''
+// 标记前端是否上传了照片，没传为0
+let uploadFlag=0
 const storage = multer.diskStorage({
 	destination: function(req, file, cb) {
 		// 指定保存到本地的目录
@@ -31,11 +34,12 @@ const storage = multer.diskStorage({
 	},
 	filename: function(req, file, cb) {
 		// 生成新的文件名
-		let imageN = JSON.parse(req.body.dat).imageName.split('.')[1] //把接收到的数据先转为对象再取值
+		imageN = JSON.parse(req.body.dat).imageName.split('.')[1] //把接收到的数据先转为对象再取值
 		let imgPrName =JSON.parse(req.body.dat).imgPrName
 		//const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9) + '.' + imageN;
 		const uniqueSuffix = imgPrName + '.' + imageN
 		//cb(null, file.fieldname + '-' + uniqueSuffix);
+		
 		cb(null, uniqueSuffix);
 
 	}
@@ -100,7 +104,8 @@ router.post('/login', (req, res) => {
 
 // 处理文件上传
 router.post('/upload', (req, res) => {
-
+	//进入了这里说明前端上传了照片标记为1
+  uploadFlag=1 
 	upload(req, res, err => {
 		if (err instanceof multer.MulterError) {
 			return res.status(500).json({
@@ -123,8 +128,19 @@ router.post('/upload', (req, res) => {
 //处理修改请求
 router.post("/modify", (req, res) => {
 	
-	let sql = "update myfamily set detail= ? ,phone = ?  where name= ? "
-	let params = [req.body.modifyDetail,req.body.modifyPhone,req.body.modifyName]
+	if(uploadFlag==1){
+		//上传了照片，要更新图片后缀imgsuffix
+		let sql = "update myfamily set detail= ? ,phone = ?  ,imgsuffix = ? where name= ? "
+		let params = [req.body.modifyDetail,req.body.modifyPhone,imageN,req.body.modifyName]
+		//重新标记
+		uploadFlag=0
+	}else{
+		//没有上传了照片，无需更新后缀imgsuffix
+		let sql = "update myfamily set detail= ? ,phone = ?   where name= ? "
+	    let params = [req.body.modifyDetail,req.body.modifyPhone,req.body.modifyName]
+	}
+	
+	
 	pool.getConnection(function(err, connection) {
 		//if(err) throw err;
 		connection.query(sql, params, function(error, results, fields) {
